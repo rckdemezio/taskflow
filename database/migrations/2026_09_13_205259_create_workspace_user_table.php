@@ -25,6 +25,9 @@ return new class extends Migration
             // Papel do usuário no workspace. Pode ser 'owner', 'admin', 'member', etc.
             $table->string('role')->default('member');
 
+            // joined_at
+            $table->timestamp('joined_at')->useCurrent();
+
             // Impede o mesmo usuario de entrar duas vezes no mesmo workspace
             $table->unique(['workspace_id', 'user_id']);
         });

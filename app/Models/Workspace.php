@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 
@@ -30,5 +31,16 @@ class Workspace extends Model
     {
         // projects.workspace_id -> workspaces.id
         return $this->hasMany(Project::class);
+    }
+
+    public function users(): BelongsToMany
+    {
+        // user_workspace.workspace_id -> workspaces.id
+        // user_workspace.user_id -> users.id
+        return $this->belongsToMany(User::class, 'user_workspace')
+            ->withPivot([
+                'role',
+                'joined_at',
+            ])->withTimestamps();
     }
 }

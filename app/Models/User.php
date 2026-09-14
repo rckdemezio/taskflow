@@ -46,9 +46,9 @@ class User extends Authenticatable
 
     public function workspaces(): BelongsToMany
     {
-        // workspace_user.user_id -> users.id
-        // workspace_user.workspace_id -> workspaces.id
-        return $this->belongsToMany(Workspace::class)
+        // user_workspace.user_id -> users.id
+        // user_workspace.workspace_id -> workspaces.id
+        return $this->belongsToMany(Workspace::class, 'user_workspace')
             ->withPivot([
                 'role',
                 'joined_at',

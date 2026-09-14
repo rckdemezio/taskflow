@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
 #[Fillable(['owner_id', 'name', 'slug'])]
 class Workspace extends Model
 {
-
     public function owner(): BelongsTo
     {
         // workspace.owner_id -> users.id
@@ -46,8 +45,6 @@ class Workspace extends Model
     /**
      * Um Workspace possui vários projetos
      * HasMany: Define uma relação consultavél de um para muitos entre o modelo Workspace e o modelo Project.
-     *
-     * @return HasMany
      */
     public function projects(): HasMany
     {
@@ -64,5 +61,19 @@ class Workspace extends Model
                 'role',
                 'joined_at',
             ])->withTimestamps();
+    }
+
+    public function scopeAccessibleTo(
+        Builder $query,
+        User $user
+    ): Builder {
+        return $query->where(function (Builder $query) use ($user) {
+            $query
+                ->where('owner_id', $user->id)
+                ->orWhereHas(
+                    'users',
+                    fn (Builder $query) => $query->whereKey($user->id)
+                );
+        });
     }
 }

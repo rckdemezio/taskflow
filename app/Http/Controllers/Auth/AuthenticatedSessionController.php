@@ -56,9 +56,11 @@ class AuthenticatedSessionController extends Controller
          * Se o middleware auth havia interceptado uma URL,
          * Laravel volta para ela.
          *
-         * Caso contrário, vai para a home.
+         * Caso contrário, vai para o Dashboard.
          */
-        return redirect()->intended('/');
+        return redirect()->intended(
+            route('dashboard', absolute: false)
+        );
     }
 
     public function destroy(Request $request)

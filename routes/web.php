@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\WorkspaceMemberController;
@@ -33,6 +34,14 @@ Route::post(
     ->name('logout');
 
 Route::middleware('auth')->group(function () {
+
+    /**
+     * Dashboard Routers
+     */
+    Route::get(
+        '/dashboard',
+        [DashboardController::class, 'index']
+    )->name('dashboard');
 
     /**
      * Projects Routers

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreWorkspaceMemberRequest;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
@@ -13,9 +14,6 @@ class WorkspaceMemberController extends Controller
 {
     /**
      * Lista os membros do workspace
-     *
-     * @param Workspace $workspace
-     * @return View
      */
     public function index(Workspace $workspace): View
     {
@@ -29,29 +27,51 @@ class WorkspaceMemberController extends Controller
 
     /**
      * Adiciona um usuário no workspace
-     *
-     * @param Workspace $workspace
-     * @return RedirectResponse
      */
-    public function store(Workspace $workspace): RedirectResponse
-    {
-        // Temporário.
-        $user = User::findOrFail(5);
+    public function store(
+        StoreWorkspaceMemberRequest $request,
+        Workspace $workspace
+    ): RedirectResponse {
+        // Somente dados que passaram pelas regras
+        // do StoreWorkspaceMemberRequest.
+        $data = $request->validated();
 
-        $workspace->users()->attach($user->id, [
-            'role' => 'member',
-            'joined_at' => now(),
-        ]);
+        // O email já foi validado como existente,
+        // agora recuperamos o respectivo User.
+        $user = User::query()
+            ->where('email', $data['email'])
+            ->firstOrFail();
 
-        return redirect()->route('workspaces.members.index', $workspace);
+        // Verifica no banco se o usuário já está
+        // relacionado a este workspace.
+        $alreadyMember = $workspace
+            ->users()
+            ->whereKey($user->id)
+            ->exists();
+        if ($alreadyMember) {
+            return back()
+                ->withErrors([
+                    'email' => 'Este usuário já pertence ao workspace.',
+                ])
+                ->withInput();
+        }
+
+        // Cria apenas a associação.
+        // Não cria outro User nem outro Workspace.
+        $workspace->users()->attach(
+            $user->id,
+            [
+                'role' => $data['role'],
+                'joined_at' => now(),
+            ]
+        );
+
+        return redirect()
+            ->route('workspaces.members.index', $workspace);
     }
 
     /**
      * Altera o papel do usuário dentro do workspace
-     *
-     * @param Workspace $workspace
-     * @param User $user
-     * @return RedirectResponse
      */
     public function update(Workspace $workspace, User $user): RedirectResponse
     {
@@ -64,13 +84,26 @@ class WorkspaceMemberController extends Controller
 
     /**
      * Remove o usuário do workspace
-     *
-     * @param Workspace $workspace
-     * @param User $user
-     * @return RedirectResponse
      */
     public function destroy(Workspace $workspace, User $user): RedirectResponse
     {
+        $member = $workspace
+            ->users()
+            ->whereKey($user->id)
+            ->firstOrFail();
+        if ($member->pivot->role === 'admin') {
+            $adminCount = $workspace
+                ->users()
+                ->wherePivot('role', 'admin')
+                ->count();
+            if ($adminCount <= 1) {
+                return back()
+                    ->withErrors([
+                        'member' => 'O workspace precisa possuir pelo menos um administrador.',
+                    ]);
+            }
+        }
+
         $workspace->users()->detach($user->id);
 
         return redirect()->route('workspaces.members.index', $workspace);

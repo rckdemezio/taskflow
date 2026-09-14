@@ -26,7 +26,9 @@ return new class extends Migration
             $table->string('role')->default('member');
 
             // joined_at
-            $table->timestamp('joined_at')->useCurrent();
+            $table->timestamp('joined_at')->nullable();
+
+            $table->timestamps();
 
             // Impede o mesmo usuario de entrar duas vezes no mesmo workspace
             $table->unique(['workspace_id', 'user_id']);

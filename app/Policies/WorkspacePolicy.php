@@ -13,28 +13,17 @@ class WorkspacePolicy
         User $user,
         Workspace $workspace
     ): bool {
-        if ($workspace->owner_id === $user->id) {
-            return true;
-        }
-
         return $workspace
-            ->users()
-            ->whereKey($user->id)
-            ->exists();
+        ->isOwner($user)
+            || $workspace->hasMember($user);
     }
 
     public function manageMembers(
         User $user,
         Workspace $workspace
     ): bool {
-        if ($workspace->owner_id === $user->id) {
-            return true;
-        }
-
         return $workspace
-            ->users()
-            ->whereKey($user->id)
-            ->wherePivot('role', 'admin')
-            ->exists();
+            ->isOwner($user)
+                || $workspace->hasAdmin($user);
     }
 }

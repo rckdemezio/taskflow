@@ -21,6 +21,28 @@ class Workspace extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
+    public function isOwner(User $user): bool
+    {
+        return $this->owner_id === $user->id;
+    }
+
+    public function hasMember(User $user): bool
+    {
+        return $this
+            ->users()
+            ->whereKey($user->id)
+            ->exists();
+    }
+
+    public function hasAdmin(User $user): bool
+    {
+        return $this
+            ->users()
+            ->whereKey($user->id)
+            ->wherePivot('role', 'admin')
+            ->exists();
+    }
+
     /**
      * Um Workspace possui vários projetos
      * HasMany: Define uma relação consultavél de um para muitos entre o modelo Workspace e o modelo Project.

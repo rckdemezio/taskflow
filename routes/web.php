@@ -32,48 +32,66 @@ Route::post(
     ->middleware('auth')
     ->name('logout');
 
-// Projects
-
 Route::middleware('auth')->group(function () {
+
+    /**
+     * Projects Routers
+     */
     Route::get(
         '/workspaces/{workspace}/projects',
         [ProjectController::class, 'index']
-    )->name('workspaces.projects.index');
+    )
+        ->can('view', 'workspace')
+        ->name('workspaces.projects.index');
+    /** Fim Projects Routes */
 
+    /**
+     * Tasks Routers
+     */
     Route::get(
         '/projects/{project}/tasks',
         [TaskController::class, 'index']
-    )->name('projects.tasks.index');
+    )
+        ->can('view', 'project')
+        ->name('projects.tasks.index');
+
+    /** Fim Tasks Routers */
+
+    /*
+     * Workspace Members
+     */
+    Route::prefix('workspaces/{workspace}/members')
+        ->name('workspaces.members.')
+        ->scopeBindings()
+        ->group(function () {
+
+            Route::get(
+                '/',
+                [WorkspaceMemberController::class, 'index']
+            )
+                ->can('view', 'workspace')
+                ->name('index');
+
+            Route::post(
+                '/',
+                [WorkspaceMemberController::class, 'store']
+            )
+                ->can('manageMembers', 'workspace')
+                ->name('store');
+
+            Route::patch(
+                '/{user}',
+                [WorkspaceMemberController::class, 'update']
+            )
+                ->can('manageMembers', 'workspace')
+                ->name('update');
+
+            Route::delete(
+                '/{user}',
+                [WorkspaceMemberController::class, 'destroy']
+            )
+                ->can('manageMembers', 'workspace')
+                ->name('destroy');
+        });
+    /** Fim Workspace Members Routers */
 });
-
-// Fim Projects
-
-// Workspace Members
-Route::middleware('auth')->prefix('workspaces/{workspace}/members')
-    ->name('workspaces.members.')
-    ->scopeBindings()
-    ->group(function () {
-        /**
-         * Qualquer participante do Workspace pode visualizar a lista
-         */
-        Route::get('/', [WorkspaceMemberController::class, 'index'])
-            ->can('view', 'workspace')
-            ->name('index');
-
-        /**
-         * Somente owner/admin
-         */
-        Route::post('/', [WorkspaceMemberController::class, 'store'])
-            ->can('manageMembers', 'workspace')
-            ->name('store');
-
-        Route::patch('/{user}', [WorkspaceMemberController::class, 'update'])
-            ->can('manageMembers', 'workspace')
-            ->name('update');
-
-        Route::delete('/{user}', [WorkspaceMemberController::class, 'destroy'])
-            ->can('manageMembers', 'workspace')
-            ->name('destroy');
-    });
-
-// Fim Workspace Members

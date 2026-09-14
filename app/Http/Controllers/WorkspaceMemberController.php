@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreWorkspaceMemberRequest;
+use App\Http\Requests\UpdateWorkspaceMemberRequest;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
@@ -67,19 +68,47 @@ class WorkspaceMemberController extends Controller
         );
 
         return redirect()
-            ->route('workspaces.members.index', $workspace);
+            ->route('workspaces.members.index', $workspace)->with('success', 'Membro adicionado com sucesso.');
     }
 
     /**
      * Altera o papel do usuário dentro do workspace
      */
-    public function update(Workspace $workspace, User $user): RedirectResponse
-    {
-        $workspace->users()->updateExistingPivot($user->id, [
-            'role' => 'admin',
-        ]);
+    public function update(
+        UpdateWorkspaceMemberRequest $request,
+        Workspace $workspace,
+        User $user
+    ): RedirectResponse {
+        $data = $request->validated();
+        // Garante que o User pertence ao workspace informado na URL.
+        $member = $workspace->users()
+            ->whereKey($user->id)
+            ->firstOrFail();
+        if ($member->pivot->role === 'admin' && $data['role'] !== 'admin') {
+            $adminCount = $workspace
+                ->users()
+                ->wherePivot('role', 'admin')
+                ->count();
+            if ($adminCount <= 1) {
+                return back()->withErrors(['member' => 'O workspace precisa possuir pelo menos um administrador.']);
+            }
+        }
 
-        return redirect()->route('workspaces.members.index', $workspace);
+        $workspace
+            ->users()
+            ->updateExistingPivot(
+                $user->id,
+                [
+                    'role' => $data['role'],
+                ]
+            );
+
+        return redirect()
+            ->route('workspaces.members.index', $workspace)
+            ->with(
+                'success',
+                'Pepel do membro alterado com sucesso!'
+            );
     }
 
     /**
@@ -91,6 +120,7 @@ class WorkspaceMemberController extends Controller
             ->users()
             ->whereKey($user->id)
             ->firstOrFail();
+
         if ($member->pivot->role === 'admin') {
             $adminCount = $workspace
                 ->users()
@@ -104,8 +134,12 @@ class WorkspaceMemberController extends Controller
             }
         }
 
-        $workspace->users()->detach($user->id);
+        $workspace
+            ->users()
+            ->detach($user->id);
 
-        return redirect()->route('workspaces.members.index', $workspace);
+        return redirect()
+            ->route('workspaces.members.index', $workspace)
+            ->with('success', 'Membro removido com sucesso.');
     }
 }

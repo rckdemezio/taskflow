@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 
-#[Fillable(['name', 'slug'])]
+#[Fillable(['owner_id', 'name', 'slug'])]
 class Workspace extends Model
 {
 

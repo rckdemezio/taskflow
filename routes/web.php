@@ -52,7 +52,6 @@ Route::middleware('auth')->group(function () {
         [WorkspaceController::class, 'create']
     )->name('workspaces.create');
 
-
     Route::post(
         '/workspaces',
         [WorkspaceController::class, 'store']
@@ -72,12 +71,55 @@ Route::middleware('auth')->group(function () {
     /**
      * Tasks Routers
      */
-    Route::get(
-        '/projects/{project}/tasks',
-        [TaskController::class, 'index']
+    Route::prefix(
+        'workspaces/{workspace}/projects/{project}/tasks'
     )
-        ->can('view', 'project')
-        ->name('projects.tasks.index');
+        ->name('workspaces.projects.tasks.')
+        ->scopeBindings()
+        ->group(function () {
+
+            Route::get(
+                '/',
+                [TaskController::class, 'index']
+            )
+                ->can('view', 'project')
+                ->name('index');
+
+            Route::get(
+                '/create',
+                [TaskController::class, 'create']
+            )
+                ->can('manageTasks', 'project')
+                ->name('create');
+
+            Route::post(
+                '/',
+                [TaskController::class, 'store']
+            )
+                ->can('manageTasks', 'project')
+                ->name('store');
+
+            Route::get(
+                '/{task}/edit',
+                [TaskController::class, 'edit']
+            )
+                ->can('update', 'task')
+                ->name('edit');
+
+            Route::patch(
+                '/{task}',
+                [TaskController::class, 'update']
+            )
+                ->can('update', 'task')
+                ->name('update');
+
+            Route::delete(
+                '/{task}',
+                [TaskController::class, 'destroy']
+            )
+                ->can('delete', 'task')
+                ->name('destroy');
+        });
 
     /** Fim Tasks Routers */
 
@@ -85,57 +127,52 @@ Route::middleware('auth')->group(function () {
      * Workspace Projects Routers
      */
     Route::prefix('workspaces/{workspace}/projects')
-    ->name('workspaces.projects.')
-    ->scopeBindings()
-    ->group(function () {
+        ->name('workspaces.projects.')
+        ->scopeBindings()
+        ->group(function () {
 
-        Route::get(
-            '/',
-            [ProjectController::class, 'index']
-        )
-            ->can('view', 'workspace')
-            ->name('index');
+            Route::get(
+                '/',
+                [ProjectController::class, 'index']
+            )
+                ->can('view', 'workspace')
+                ->name('index');
 
+            Route::get(
+                '/create',
+                [ProjectController::class, 'create']
+            )
+                ->can('manageProjects', 'workspace')
+                ->name('create');
 
-        Route::get(
-            '/create',
-            [ProjectController::class, 'create']
-        )
-            ->can('manageProjects', 'workspace')
-            ->name('create');
+            Route::post(
+                '/',
+                [ProjectController::class, 'store']
+            )
+                ->can('manageProjects', 'workspace')
+                ->name('store');
 
+            Route::get(
+                '/{project}/edit',
+                [ProjectController::class, 'edit']
+            )
+                ->can('update', 'project')
+                ->name('edit');
 
-        Route::post(
-            '/',
-            [ProjectController::class, 'store']
-        )
-            ->can('manageProjects', 'workspace')
-            ->name('store');
+            Route::patch(
+                '/{project}',
+                [ProjectController::class, 'update']
+            )
+                ->can('update', 'project')
+                ->name('update');
 
-
-        Route::get(
-            '/{project}/edit',
-            [ProjectController::class, 'edit']
-        )
-            ->can('update', 'project')
-            ->name('edit');
-
-
-        Route::patch(
-            '/{project}',
-            [ProjectController::class, 'update']
-        )
-            ->can('update', 'project')
-            ->name('update');
-
-
-        Route::delete(
-            '/{project}',
-            [ProjectController::class, 'destroy']
-        )
-            ->can('delete', 'project')
-            ->name('destroy');
-    });
+            Route::delete(
+                '/{project}',
+                [ProjectController::class, 'destroy']
+            )
+                ->can('delete', 'project')
+                ->name('destroy');
+        });
     /** Fim Workspace Projects Routers */
 
     /*

@@ -44,4 +44,15 @@ class ProjectPolicy
         return $workspace->isOwner($user)
             || $workspace->hasAdmin($user);
     }
+
+    public function manageTasks(
+        User $user,
+        Project $project
+    ): bool
+    {
+        $workspace = $project->workspace;
+
+        return $workspace->isOwner($user)
+            || $workspace->hasMember($user);
+    }
 }

@@ -2,10 +2,17 @@
 
 <p> Olá, {{ auth()->user()->name }} </p>
 
-<form
-    method="POST"
-    action="{{ route('logout') }}"
->
+<a href="{{ route('workspaces.create') }}">
+    Criar novo Workspace
+</a>
+
+@if (session('success'))
+    <div>
+        {{ session('success') }}
+    </div>
+@endif
+
+<form method="POST" action="{{ route('logout') }}">
     @csrf
 
     <button type="submit">
@@ -18,7 +25,6 @@
 <h2>Seus Workspaces</h2>
 
 @forelse ($workspaces as $workspace)
-
     <article>
 
         <h3>
@@ -42,21 +48,11 @@
         </p>
 
         <nav>
-            <a
-                href="{{ route(
-                    'workspaces.projects.index',
-                    $workspace
-                ) }}"
-            >
+            <a href="{{ route('workspaces.projects.index', $workspace) }}">
                 Ver projetos
             </a>
 
-            <a
-                href="{{ route(
-                    'workspaces.members.index',
-                    $workspace
-                ) }}"
-            >
+            <a href="{{ route('workspaces.members.index', $workspace) }}">
                 Ver membros
             </a>
         </nav>
@@ -70,5 +66,4 @@
     <p>
         Você ainda não participa de nenhum Workspace.
     </p>
-
 @endforelse

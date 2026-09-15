@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\WorkspaceMemberController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +43,20 @@ Route::middleware('auth')->group(function () {
         '/dashboard',
         [DashboardController::class, 'index']
     )->name('dashboard');
+
+    /**
+     * Workspace Routers
+     */
+    Route::get(
+        '/workspaces/create',
+        [WorkspaceController::class, 'create']
+    )->name('workspaces.create');
+
+
+    Route::post(
+        '/workspaces',
+        [WorkspaceController::class, 'store']
+    )->name('workspaces.store');
 
     /**
      * Projects Routers

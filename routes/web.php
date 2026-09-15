@@ -81,6 +81,63 @@ Route::middleware('auth')->group(function () {
 
     /** Fim Tasks Routers */
 
+    /**
+     * Workspace Projects Routers
+     */
+    Route::prefix('workspaces/{workspace}/projects')
+    ->name('workspaces.projects.')
+    ->scopeBindings()
+    ->group(function () {
+
+        Route::get(
+            '/',
+            [ProjectController::class, 'index']
+        )
+            ->can('view', 'workspace')
+            ->name('index');
+
+
+        Route::get(
+            '/create',
+            [ProjectController::class, 'create']
+        )
+            ->can('manageProjects', 'workspace')
+            ->name('create');
+
+
+        Route::post(
+            '/',
+            [ProjectController::class, 'store']
+        )
+            ->can('manageProjects', 'workspace')
+            ->name('store');
+
+
+        Route::get(
+            '/{project}/edit',
+            [ProjectController::class, 'edit']
+        )
+            ->can('update', 'project')
+            ->name('edit');
+
+
+        Route::patch(
+            '/{project}',
+            [ProjectController::class, 'update']
+        )
+            ->can('update', 'project')
+            ->name('update');
+
+
+        Route::delete(
+            '/{project}',
+            [ProjectController::class, 'destroy']
+        )
+            ->can('delete', 'project')
+            ->name('destroy');
+    });
+    /** Fim Workspace Projects Routers */
+
     /*
      * Workspace Members
      */

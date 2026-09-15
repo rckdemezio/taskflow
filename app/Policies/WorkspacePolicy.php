@@ -26,4 +26,14 @@ class WorkspacePolicy
             ->isOwner($user)
                 || $workspace->hasAdmin($user);
     }
+
+    public function manageProjects(
+        User $user,
+        Workspace $workspace
+    ): bool
+    {
+        return $workspace
+            ->isOwner($user)
+                || $workspace->hasAdmin($user);
+    }
 }
